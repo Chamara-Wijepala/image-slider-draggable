@@ -19,7 +19,8 @@ function dragStart(e) {
 	isDragStart = true;
 	// pageX returns the horizontal coordinate (in pixels) where the mouse event
 	// fired, relative to the left edge of the entire document.
-	prevPageX = e.pageX;
+	// touches returns a list of Touch objects for each touch point on the screen.
+	prevPageX = e.pageX || e.touches[0].pageX;
 	// scrollLeft gets or sets number of pixels an element's content is scrolled
 	// from its left edge.
 	prevScrollLeft = carousel.scrollLeft;
@@ -32,7 +33,7 @@ function dragging(e) {
 
 	carousel.classList.add('dragging');
 
-	let positionDiff = e.pageX - prevPageX;
+	let positionDiff = (e.pageX || e.touches[0].pageX) - prevPageX;
 
 	carousel.scrollLeft = prevScrollLeft - positionDiff;
 
@@ -57,6 +58,11 @@ arrowIcons.forEach((icon) => {
 });
 
 carousel.addEventListener('mousedown', dragStart);
+carousel.addEventListener('touchstart', dragStart);
+
 carousel.addEventListener('mousemove', dragging);
+carousel.addEventListener('touchmove', dragging);
+
 carousel.addEventListener('mouseup', dragStop);
 carousel.addEventListener('mouseleave', dragStop);
+carousel.addEventListener('touchend', dragStop);
