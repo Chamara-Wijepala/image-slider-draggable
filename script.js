@@ -3,8 +3,10 @@ const firstImg = carousel.querySelectorAll('img')[0];
 const arrowIcons = document.querySelectorAll('i');
 
 let isDragStart = false,
+	isDragging = false,
 	prevPageX,
-	prevScrollLeft;
+	prevScrollLeft,
+	positionDiff;
 
 function showHideIcons() {
 	// scrollWidth returns the width of an element including hidden content.
@@ -13,6 +15,29 @@ function showHideIcons() {
 	arrowIcons[0].style.display = carousel.scrollLeft == 0 ? 'none' : 'block';
 	arrowIcons[1].style.display =
 		carousel.scrollLeft == maxScrollWidth ? 'none' : 'block';
+}
+
+function scrollSnap() {
+	// if there is no image to scroll, prevent scrolling backwards
+	if (carousel.scrollLeft == carousel.scrollWidth - carousel.clientWidth) {
+		return;
+	}
+
+	// convert positionDiff to positive
+	positionDiff = Math.abs(positionDiff);
+
+	let firstImgWidth = firstImg.clientWidth + 14;
+	let valDifference = firstImgWidth - positionDiff;
+
+	// if user is scrolling to the right
+	if (carousel.scrollLeft > prevScrollLeft) {
+		return (carousel.scrollLeft +=
+			positionDiff > firstImgWidth / 3 ? valDifference : -positionDiff);
+	}
+
+	// if user is scrolling to the left
+	carousel.scrollLeft -=
+		positionDiff > firstImgWidth / 3 ? valDifference : -positionDiff;
 }
 
 function dragStart(e) {
@@ -31,9 +56,11 @@ function dragging(e) {
 	if (!isDragStart) return;
 	e.preventDefault();
 
+	isDragging = true;
+
 	carousel.classList.add('dragging');
 
-	let positionDiff = (e.pageX || e.touches[0].pageX) - prevPageX;
+	positionDiff = (e.pageX || e.touches[0].pageX) - prevPageX;
 
 	carousel.scrollLeft = prevScrollLeft - positionDiff;
 
@@ -43,6 +70,11 @@ function dragging(e) {
 function dragStop() {
 	isDragStart = false;
 	carousel.classList.remove('dragging');
+
+	if (!isDragging) return;
+
+	isDragging = false;
+	scrollSnap();
 }
 
 arrowIcons.forEach((icon) => {
